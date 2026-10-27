@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Innseye Asylum // Central London Terminal</title>
+  <style>
+    :root {
+      --bg: #050706;
+      --panel: #0a0f0c;
+      --border: #16221a;
+      --green: #22c55e;
+      --green-glow: rgba(34, 197, 94, 0.3);
+      --green-bright: #4ade80;
+      --cyan: #38bdf8;
+      --amber: #f59e0b;
+      --red: #f43f5e;
+      --text: #e2e8f0;
+      --text-dim: #64748b;
+      --font-mono: 'Courier New', Courier, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Barra Superior Fixa */
+    header {
+      background: #080d0a;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .brand h1 {
+      font-size: 1rem;
+      letter-spacing: 2px;
+      color: var(--green);
+      text-shadow: 0 0 10px var(--green-glow);
+    }
+
+    .brand span {
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    .header-ctrls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-sys {
+      background: #0f1712;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-sys:hover {
+      color: #fff;
+      border-color: var(--green);
+    }
+
+    /* Área Principal de Conteúdo */
+    main {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* --- TELA 0: BOTÃO INICIAL DE START (DESTRAVA AUTOPLAY) --- */
+    #screenBoot {
+      position: fixed;
+      inset: 0;
+      background: #020403;
+      z-index: 5000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .btn-boot {
+      padding: 18px 36px;
+      background: #064e3b;
+      border: 2px solid var(--green);
+      color: #f0fdf4;
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: bold;
+      letter-spacing: 3px;
+      cursor: pointer;
+      border-radius: 8px;
+      text-transform: uppercase;
+      box-shadow: 0 0 35px var(--green-glow);
+      transition: all 0.25s;
+    }
+
+    .btn-boot:hover {
+      background: #047857;
+      transform: scale(1.03);
+    }
+
+    /* --- TELA 1: VÍDEO INTRODUTÓRIO (ELLIE BRIEFING) --- */
+    #screenIntro {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 4000;
+      display: none;
+    }
+
+    #introVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .skip-intro-btn {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(10, 15, 12, 0.75);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .skip-intro-btn:hover {
+      color: #fff;
+      border-color: var(--green);
+    }
+
+    /* --- TELA 2: LOGIN COOPERATIVO (SECTION A) --- */
+    #screenLogin {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, #0d1510 0%, #030504 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+
+    #screenLogin.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .login-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 520px;
+      width: 92%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .login-box h2 {
+      font-size: 1.15rem;
+      color: var(--green);
+      letter-spacing: 2px;
+    }
+
+    .login-box p {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .team-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      text-align: left;
+    }
+
+    .team-label {
+      font-size: 0.7rem;
+      color: var(--amber);
+      letter-spacing: 1px;
+    }
+
+    .team-input-group input {
+      background: #040605;
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: bold;
+      letter-spacing: 3px;
+      padding: 10px 14px;
+      border-radius: 5px;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .team-input-group input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-authenticate {
+      margin-top: 8px;
+      padding: 14px;
+      background: #064e3b;
+      border: 1px solid var(--green);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 6px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-authenticate:hover {
+      background: #047857;
+      box-shadow: 0 0 20px var(--green-glow);
+    }
+
+    .btn-replay-briefing {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-dim);
+      padding: 8px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+
+    .btn-replay-briefing:hover {
+      color: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    .login-feedback {
+      font-size: 0.78rem;
+      min-height: 1.2em;
+      letter-spacing: 1px;
+    }
+
+    /* --- TELA 3: DASHBOARD CENTRAL DE MÓDULOS --- */
+    #screenDashboard {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .dash-intro {
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .dash-intro h2 {
+      font-size: 1.3rem;
+      color: var(--green);
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    .dash-intro p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 960px;
+      width: 100%;
+    }
+
+    .module-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .module-card:hover {
+      border-color: var(--green);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px var(--green-glow);
+    }
+
+    .mod-icon { font-size: 2rem; }
+
+    .mod-title {
+      font-size: 0.95rem;
+      color: #fff;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .mod-desc {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .mod-badge {
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--amber);
+      margin-top: auto;
+    }
+
+    /* --- TELA 4: CONTAINER DO IFRAME (SUB-APPS) --- */
+    #iframeWrapper {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      z-index: 200;
+      background: #000;
+    }
+
+    .iframe-bar {
+      background: #080d0a;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .iframe-title {
+      font-size: 0.75rem;
+      color: var(--cyan);
+      letter-spacing: 1px;
+    }
+
+    .btn-close-app {
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: #f87171;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+
+    .btn-close-app:hover {
+      background: #7f1d1d;
+      color: #fff;
+    }
+
+    iframe {
+      width: 100%;
+      flex: 1;
+      border: none;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tela 0: Botão Inicial de Boot -->
+  <div id="screenBoot">
+    <button class="btn-boot" id="btnBoot">⚡ INITIALIZE TERMINAL</button>
+    <span style="font-size: 0.75rem; color: #64748b; letter-spacing: 1px;">[CLICK TO ARM AUDIO & EXPAND TO FULLSCREEN]</span>
+  </div>
+
+  <!-- Tela 1: Vídeo de Introdução da Ellie -->
+  <div id="screenIntro">
+    <video id="introVideo" src="intro.mp4" playsinline></video>
+    <button class="skip-intro-btn" id="btnSkipIntro">SKIP BRIEFING ⏭</button>
+  </div>
+
+  <!-- Barra Superior -->
+  <header>
+    <div class="brand">
+      <h1>INNSEYE ASYLUM // CENTRAL COMMAND</h1>
+      <span>TERMINAL 01 [WARD A RECEPTION]</span>
+    </div>
+    <div class="header-ctrls">
+      <button class="btn-sys" id="btnAudioToggle">🔊 AUDIO: ON</button>
+      <button class="btn-sys" id="btnFullscreen">⛶ FULLSCREEN (F11)</button>
+    </div>
+  </header>
+
+  <!-- Corpo Principal -->
+  <main>
+
+    <!-- Tela 2: Login da Section A -->
+    <div id="screenLogin">
+      <div class="login-box">
+        <h2>SECURITY CLEARANCE REQUIRED</h2>
+        <p>CROSS-REFERENCE EMERGENCY CLINICAL PROTOCOLS ACROSS TEAMS 1, 2, AND 3 TO AUTHORIZE OPERATIONAL TERMINAL:</p>
+
+        <div class="team-input-group">
+          <label class="team-label">TEAM 1 (BEGINNER SECTOR):</label>
+          <input type="text" id="passTeam1" placeholder="ENTER IDENTIFIER..." autocomplete="off">
+        </div>
+
+        <div class="team-input-group">
+          <label class="team-label">TEAM 2 (INTERMEDIATE SECTOR):</label>
+          <input type="text" id="passTeam2" placeholder="ENTER IDENTIFIER..." autocomplete="off">
+        </div>
+
+        <div class="team-input-group">
+          <label class="team-label">TEAM 3 (ADVANCED SECTOR):</label>
+          <input type="text" id="passTeam3" placeholder="ENTER IDENTIFIER..." autocomplete="off">
+        </div>
+
+        <button class="btn-authenticate" id="btnAuthenticate">AUTHENTICATE STATION</button>
+        <button class="btn-replay-briefing" id="btnReplayBriefing">↺ REPLAY MISSION BRIEFING TRANSMISSION</button>
+        <div class="login-feedback" id="loginFeedback"></div>
+      </div>
+    </div>
+
+    <!-- Tela 3: Dashboard de Módulos (Após Login) -->
+    <div id="screenDashboard">
+      <div class="dash-intro">
+        <h2>STATION OPERATIONAL</h2>
+        <p>RECEPTION TERMINAL AUTHORIZED. ACCESS SUBSYSTEMS TO ADVANCE TO SECTOR B & C INVESTIGATION:</p>
+      </div>
+
+      <div class="modules-grid">
+        <!-- Rádio Zenith -->
+        <div class="module-card" onclick="launchSubApp('https://uptimevitoria.github.io/teste-radio/radio.html', 'EMERGENCY VHF RECEIVER // 93.4 & 99.7 MHz')">
+          <div class="mod-icon">📻</div>
+          <div class="mod-title">VHF RECEIVER</div>
+          <div class="mod-desc">Scan emergency analog bands. Intercept maritime broadcasts and asylum conductor anomalies.</div>
+          <div class="mod-badge">DUAL TUNING DIAL</div>
+        </div>
+
+        <!-- Lente da Verdade -->
+        <div class="module-card" onclick="launchSubApp('https://uptimevitoria.github.io/truth-lens/lensoftruth.html', 'OCULAR SCREENING // SURVEILLANCE FEED')">
+          <div class="mod-icon">👁️</div>
+          <div class="mod-title">TRUTH PROTOCOL</div>
+          <div class="mod-desc">Synchronized optical filter feed. Cross-reference clinical symptoms and verify infected subjects.</div>
+          <div class="mod-badge">REQUIRES ROUTE CODE</div>
+        </div>
+
+        <!-- Field Journal -->
+        <div class="module-card" onclick="launchSubApp('journal.html', 'FORENSIC DOSSIER // ARCHETYPE VERDICT')">
+          <div class="mod-icon">📋</div>
+          <div class="mod-title">FIELD JOURNAL</div>
+          <div class="mod-desc">Access entity classifications. Register pericial findings to authorize building decontamination.</div>
+          <div class="mod-badge">3 TARGETS MATRIX</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tela 4: Wrapper de Iframe -->
+    <div id="iframeWrapper">
+      <div class="iframe-bar">
+        <span class="iframe-title" id="iframeTitle">SUBSYSTEM</span>
+        <button class="btn-close-app" onclick="closeSubApp()">✕ CLOSE MODULE</button>
+      </div>
+      <iframe id="appFrame" src="about:blank"></iframe>
+    </div>
+
+  </main>
+
+  <!-- Áudio Ambiente (Loop de Tensão) -->
+  <audio id="ambientAudio" src="ambient_london.mp3" loop preload="auto"></audio>
+
+  <script>
+    // ==========================================================
+    // CREDENCIAIS DA SECTION A
+    // ==========================================================
+    const AUTH_KEYS = {
+      team1: "PATIENT",
+      team2: "STATUS",
+      team3: "WARNING"
+    };
+
+    // Elementos DOM
+    const screenBoot = document.getElementById('screenBoot');
+    const btnBoot = document.getElementById('btnBoot');
+    const screenIntro = document.getElementById('screenIntro');
+    const introVideo = document.getElementById('introVideo');
+    const btnSkipIntro = document.getElementById('btnSkipIntro');
+
+    const screenLogin = document.getElementById('screenLogin');
+    const passTeam1 = document.getElementById('passTeam1');
+    const passTeam2 = document.getElementById('passTeam2');
+    const passTeam3 = document.getElementById('passTeam3');
+    const btnAuth = document.getElementById('btnAuthenticate');
+    const btnReplayBriefing = document.getElementById('btnReplayBriefing');
+    const loginFeedback = document.getElementById('loginFeedback');
+
+    const iframeWrapper = document.getElementById('iframeWrapper');
+    const appFrame = document.getElementById('appFrame');
+    const iframeTitle = document.getElementById('iframeTitle');
+
+    const ambientAudio = document.getElementById('ambientAudio');
+    const btnAudioToggle = document.getElementById('btnAudioToggle');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+
+    let audioEnabled = true;
+
+    // ----------------------------------------------------------
+    // 1. INICIALIZAÇÃO COM GESTO DO USUÁRIO & BRIEFING EM VÍDEO
+    // ----------------------------------------------------------
+    btnBoot.addEventListener('click', () => {
+      // Solicita tela cheia
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(e => console.warn(e));
+      }
+
+      screenBoot.style.display = 'none';
+      playMissionBriefing();
+    });
+
+    function playMissionBriefing() {
+      // Pausa áudio ambiente caso esteja tocando
+      ambientAudio.pause();
+
+      screenIntro.style.display = 'block';
+      introVideo.currentTime = 0;
+      introVideo.play().catch(e => {
+        console.warn("Autoplay bloqueado:", e);
+        endMissionBriefing();
+      });
+
+      introVideo.onended = endMissionBriefing;
+    }
+
+    btnSkipIntro.addEventListener('click', endMissionBriefing);
+
+    function endMissionBriefing() {
+      introVideo.pause();
+      screenIntro.style.display = 'none';
+
+      // Inicia áudio ambiente de London
+      if (audioEnabled) {
+        ambientAudio.volume = 0.35;
+        ambientAudio.play().catch(e => console.warn(e));
+      }
+
+      // Foca no primeiro campo de texto
+      passTeam1.focus();
+    }
+
+    btnReplayBriefing.addEventListener('click', playMissionBriefing);
+
+    // ----------------------------------------------------------
+    // 2. AUTENTICAÇÃO COOPERATIVA (SECTION A)
+    // ----------------------------------------------------------
+    btnAuth.addEventListener('click', () => {
+      const p1 = passTeam1.value.trim().toUpperCase();
+      const p2 = passTeam2.value.trim().toUpperCase();
+      const p3 = passTeam3.value.trim().toUpperCase();
+
+      if (p1 === AUTH_KEYS.team1 && p2 === AUTH_KEYS.team2 && p3 === AUTH_KEYS.team3) {
+        loginFeedback.style.color = "var(--green)";
+        loginFeedback.textContent = "[ACCESS GRANTED] INITIALIZING WARD TELEMETRY...";
+
+        setTimeout(() => {
+          screenLogin.classList.add('hidden');
+        }, 900);
+      } else {
+        loginFeedback.style.color = "var(--red)";
+        loginFeedback.textContent = "[SECURITY LOCKOUT] CREDENTIALS MISMATCH. VERIFY PAPERS.";
+      }
+    });
+
+    // Enter para avançar entre campos
+    [passTeam1, passTeam2, passTeam3].forEach((input, idx, arr) => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          if (idx < arr.length - 1) arr[idx + 1].focus();
+          else btnAuth.click();
+        }
+      });
+    });
+
+    // ----------------------------------------------------------
+    // 3. GERENCIAMENTO DE SUB-MÓDULOS (IFRAME)
+    // ----------------------------------------------------------
+    function launchSubApp(url, title) {
+      iframeTitle.textContent = title;
+      appFrame.src = url;
+      iframeWrapper.style.display = 'flex';
+    }
+
+    function closeSubApp() {
+      appFrame.src = 'about:blank';
+      iframeWrapper.style.display = 'none';
+    }
+
+    // ----------------------------------------------------------
+    // 4. CONTROLES DE SISTEMA
+    // ----------------------------------------------------------
+    btnAudioToggle.addEventListener('click', () => {
+      audioEnabled = !audioEnabled;
+      if (audioEnabled) {
+        ambientAudio.play().catch(e => console.warn(e));
+        btnAudioToggle.textContent = "🔊 AUDIO: ON";
+      } else {
+        ambientAudio.pause();
+        btnAudioToggle.textContent = "🔇 AUDIO: OFF";
+      }
+    });
+
+    btnFullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(e => console.warn(e));
+        btnFullscreen.textContent = "⛶ EXIT FULLSCREEN";
+      } else {
+        document.exitFullscreen().catch(e => console.warn(e));
+        btnFullscreen.textContent = "⛶ FULLSCREEN (F11)";
+      }
+    });
+  </script>
+</body>
+</html>
