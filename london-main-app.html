@@ -37,7 +37,7 @@
       flex-direction: column;
     }
 
-    /* Barra Superior Fixa */
+    /* Barra Superior */
     header {
       background: #080d0a;
       border-bottom: 1px solid var(--border);
@@ -84,14 +84,14 @@
       border-color: var(--green);
     }
 
-    /* Área Principal de Conteúdo */
+    /* Área Principal */
     main {
       flex: 1;
       position: relative;
       overflow: hidden;
     }
 
-    /* --- TELA 0: BOTÃO INICIAL DE START (DESTRAVA AUTOPLAY) --- */
+    /* --- TELA 0: BOTÃO INICIAL DE BOOT (DESTRAVA AUTOPLAY E ÁUDIO) --- */
     #screenBoot {
       position: fixed;
       inset: 0;
@@ -125,7 +125,7 @@
       transform: scale(1.03);
     }
 
-    /* --- TELA 1: VÍDEO INTRODUTÓRIO (ELLIE BRIEFING) --- */
+    /* --- TELA 1: VÍDEO DE INTRODUÇÃO DA ELLIE (TELA CHEIA) --- */
     #screenIntro {
       position: fixed;
       inset: 0;
@@ -367,7 +367,7 @@
       margin-top: auto;
     }
 
-    /* --- TELA 4: CONTAINER DO IFRAME (SUB-APPS) --- */
+    /* --- TELA 4: WRAPPER DO IFRAME --- */
     #iframeWrapper {
       position: absolute;
       inset: 0;
@@ -418,19 +418,19 @@
 </head>
 <body>
 
-  <!-- Tela 0: Botão Inicial de Boot -->
+  <!-- Tela 0: Botão de Boot -->
   <div id="screenBoot">
     <button class="btn-boot" id="btnBoot">⚡ INITIALIZE TERMINAL</button>
     <span style="font-size: 0.75rem; color: #64748b; letter-spacing: 1px;">[CLICK TO ARM AUDIO & EXPAND TO FULLSCREEN]</span>
   </div>
 
-  <!-- Tela 1: Vídeo de Introdução da Ellie -->
+  <!-- Tela 1: Vídeo de Introdução Oficial (GitHub Release) -->
   <div id="screenIntro">
-    <video id="introVideo" src="intro.mp4" playsinline></video>
+    <video id="introVideo" src="https://github.com/uptimevitoria/mainapp/releases/download/v1.0/intro.mp4" playsinline preload="auto"></video>
     <button class="skip-intro-btn" id="btnSkipIntro">SKIP BRIEFING ⏭</button>
   </div>
 
-  <!-- Barra Superior -->
+  <!-- Topo -->
   <header>
     <div class="brand">
       <h1>INNSEYE ASYLUM // CENTRAL COMMAND</h1>
@@ -442,10 +442,10 @@
     </div>
   </header>
 
-  <!-- Corpo Principal -->
+  <!-- Container Principal -->
   <main>
 
-    <!-- Tela 2: Login da Section A -->
+    <!-- Tela 2: Autenticação da Section A -->
     <div id="screenLogin">
       <div class="login-box">
         <h2>SECURITY CLEARANCE REQUIRED</h2>
@@ -472,7 +472,7 @@
       </div>
     </div>
 
-    <!-- Tela 3: Dashboard de Módulos (Após Login) -->
+    <!-- Tela 3: Dashboard de Ferramentas -->
     <div id="screenDashboard">
       <div class="dash-intro">
         <h2>STATION OPERATIONAL</h2>
@@ -480,7 +480,7 @@
       </div>
 
       <div class="modules-grid">
-        <!-- Rádio Zenith -->
+        <!-- Rádio VHF -->
         <div class="module-card" onclick="launchSubApp('https://uptimevitoria.github.io/teste-radio/radio.html', 'EMERGENCY VHF RECEIVER // 93.4 & 99.7 MHz')">
           <div class="mod-icon">📻</div>
           <div class="mod-title">VHF RECEIVER</div>
@@ -506,7 +506,7 @@
       </div>
     </div>
 
-    <!-- Tela 4: Wrapper de Iframe -->
+    <!-- Tela 4: Wrapper do Iframe -->
     <div id="iframeWrapper">
       <div class="iframe-bar">
         <span class="iframe-title" id="iframeTitle">SUBSYSTEM</span>
@@ -517,20 +517,17 @@
 
   </main>
 
-  <!-- Áudio Ambiente (Loop de Tensão) -->
+  <!-- Áudio Ambiente (Loop de Tensão de London) -->
   <audio id="ambientAudio" src="ambient_london.mp3" loop preload="auto"></audio>
 
   <script>
-    // ==========================================================
-    // CREDENCIAIS DA SECTION A
-    // ==========================================================
+    // Gabarito Section A
     const AUTH_KEYS = {
       team1: "PATIENT",
       team2: "STATUS",
       team3: "WARNING"
     };
 
-    // Elementos DOM
     const screenBoot = document.getElementById('screenBoot');
     const btnBoot = document.getElementById('btnBoot');
     const screenIntro = document.getElementById('screenIntro');
@@ -555,27 +552,21 @@
 
     let audioEnabled = true;
 
-    // ----------------------------------------------------------
-    // 1. INICIALIZAÇÃO COM GESTO DO USUÁRIO & BRIEFING EM VÍDEO
-    // ----------------------------------------------------------
+    // 1. Armar Áudio, Tela Cheia e Iniciar Vídeo
     btnBoot.addEventListener('click', () => {
-      // Solicita tela cheia
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(e => console.warn(e));
       }
-
       screenBoot.style.display = 'none';
       playMissionBriefing();
     });
 
     function playMissionBriefing() {
-      // Pausa áudio ambiente caso esteja tocando
       ambientAudio.pause();
-
       screenIntro.style.display = 'block';
       introVideo.currentTime = 0;
       introVideo.play().catch(e => {
-        console.warn("Autoplay bloqueado:", e);
+        console.warn("Autoplay:", e);
         endMissionBriefing();
       });
 
@@ -588,21 +579,17 @@
       introVideo.pause();
       screenIntro.style.display = 'none';
 
-      // Inicia áudio ambiente de London
       if (audioEnabled) {
         ambientAudio.volume = 0.35;
         ambientAudio.play().catch(e => console.warn(e));
       }
 
-      // Foca no primeiro campo de texto
       passTeam1.focus();
     }
 
     btnReplayBriefing.addEventListener('click', playMissionBriefing);
 
-    // ----------------------------------------------------------
-    // 2. AUTENTICAÇÃO COOPERATIVA (SECTION A)
-    // ----------------------------------------------------------
+    // 2. Validação da Section A
     btnAuth.addEventListener('click', () => {
       const p1 = passTeam1.value.trim().toUpperCase();
       const p2 = passTeam2.value.trim().toUpperCase();
@@ -621,7 +608,6 @@
       }
     });
 
-    // Enter para avançar entre campos
     [passTeam1, passTeam2, passTeam3].forEach((input, idx, arr) => {
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -631,9 +617,7 @@
       });
     });
 
-    // ----------------------------------------------------------
-    // 3. GERENCIAMENTO DE SUB-MÓDULOS (IFRAME)
-    // ----------------------------------------------------------
+    // 3. Gerenciamento do Iframe
     function launchSubApp(url, title) {
       iframeTitle.textContent = title;
       appFrame.src = url;
@@ -645,9 +629,7 @@
       iframeWrapper.style.display = 'none';
     }
 
-    // ----------------------------------------------------------
-    // 4. CONTROLES DE SISTEMA
-    // ----------------------------------------------------------
+    // 4. Áudio e Tela Cheia
     btnAudioToggle.addEventListener('click', () => {
       audioEnabled = !audioEnabled;
       if (audioEnabled) {
